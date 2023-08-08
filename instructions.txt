@@ -1,0 +1,7 @@
+Steps to follow
+1.install all the follwing libraries
+	1. pip install pandas
+	2. pip install lifelines
+	3. pip install scikit-learn
+	
+2. Make sure the excel file is in the same directory
