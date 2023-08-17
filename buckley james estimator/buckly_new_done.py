@@ -3,6 +3,7 @@ import numpy as np
 from lifelines import CoxPHFitter
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
 
 # Load the data from the .xlsx file
 data = pd.read_excel('data1.xlsx')
@@ -19,6 +20,25 @@ scaler = StandardScaler()
 data_encoded[['DEATH', 'AGE']] = scaler.fit_transform(data_encoded[['DEATH', 'AGE']])
 buckley_james_data = data_encoded[['Months', 'DEATH', 'AGE'] + [col for col in data_encoded.columns if col.startswith('SEX_') or col.startswith('CompositeStage_') or col.startswith('LNInvolment_') or col.startswith('Comorbidity_') or col.startswith('FamiliyHistoryOfCancer_')]]
 
+data = data.dropna(subset=['Months', 'DEATH', 'AGE', 'SEX', 'CompositeStage', 'LNInvolment', 'Comorbidity', 'FamiliyHistoryOfCancer'])
+
+# Handle missing values in other columns
+imputer = SimpleImputer(strategy='median')
+data[['DEATH', 'AGE', 'CompositeStage', 'LNInvolment', 'Comorbidity']] = imputer.fit_transform(data[['DEATH', 'AGE', 'CompositeStage', 'LNInvolment', 'Comorbidity']])
+
+# Standardize the covariates
+scaler = StandardScaler()
+data[['DEATH', 'AGE', 'CompositeStage', 'LNInvolment', 'Comorbidity']] = scaler.fit_transform(data[['DEATH', 'AGE', 'CompositeStage', 'LNInvolment', 'Comorbidity']])
+
+# Create a new DataFrame with the required columns for the Buckley-James estimator
+buckley_james_data = data[['Months', 'DEATH', 'AGE', 'SEX', 'CompositeStage', 'LNInvolment', 'Comorbidity', 'FamiliyHistoryOfCancer']]
+
+# Fit the Buckley-James model with custom options
+cph = CoxPHFitter(penalizer=0.1)  # Set the penalizer parameter to control overfitting
+cph.fit(buckley_james_data, 'Months', 'DEATH', show_progress=True)  # Set the step_size parameter to control the convergence speed
+
+# Print the estimated coefficients (summary)
+print(cph.summary)
 # Perform univariate analysis
 univariate_results = []
 univariate_aic_bic = []
