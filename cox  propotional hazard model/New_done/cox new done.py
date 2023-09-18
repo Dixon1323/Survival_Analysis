@@ -62,6 +62,25 @@ print(f"\nSignificant variable based on p-value: {significant_variable_pvalue}")
 
 
 
+
+
+data['Significant_Category'] = ''
+
+# Define the criteria for assigning categorical values
+threshold = 0.05
+
+# Assign categorical values based on the p-value
+data.loc[data[significant_variable_pvalue] <= threshold, 'Significant_Category'] = 'Significant'
+data.loc[data[significant_variable_pvalue] > threshold, 'Significant_Category'] = 'Not Significant'
+
+# Print the updated dataset
+print("Updated data with significant variables as categorical data:\n")
+print(data)
+
+
+
+
+
 cph_univariate = CoxPHFitter(penalizer=0.1)
 cph_univariate.fit(data[['Months', 'DEATH', significant_variable_pvalue]], duration_col='Months', event_col='DEATH', show_progress=True)
 univariate_results = cph_univariate.print_summary()
